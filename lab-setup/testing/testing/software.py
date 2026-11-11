@@ -2,6 +2,7 @@
 from datetime import datetime, timezone
 import json
 import socket
+import subprocess
 import time
 import uuid
 
@@ -79,14 +80,17 @@ def format_input(runner, check):
             evidence["requests"].append(request)
             while True:
                 remaining = deadline - time.monotonic()
-                if remaining <= 0:
+                if remaining < 1:
                     raise CheckFailure(f"no complete normal-input trace for {marker}; see {path.name}")
-                result = runner.docker(["logs", "--timestamps", "--since", since, container_id], timeout=min(5, remaining))
+                try:
+                    result = runner.docker(["logs", "--timestamps", "--since", since, container_id], timeout=min(5, remaining))
+                except subprocess.TimeoutExpired as exc:
+                    raise CheckFailure(f"timed out reading normal-input logs for {marker}; see {path.name}") from exc
                 logs = runner.successful(result)
                 stderr = (runner.run_dir / result[2]).with_suffix(".stderr")
                 if stderr.is_file():
-                    # Docker separates the container's stdout/stderr. Restore the
-                    # timestamp order before correlating one request's full trace.
+                    # Merge both streams for evidence. Timestamp order does not
+                    # guarantee the program's write order across stdout/stderr.
                     other = stderr.read_text(errors="replace")
                     if other:
                         logs = "\n".join(sorted((logs + "\n" + other).splitlines(),

@@ -1,18 +1,23 @@
-"""Interpret only the normal-input trace supplied by the Format String lab."""
+"""Interpret ordinary input traces from the supplied lab programs."""
 import re
 
 
 def buffer_trace(logs, byte_count):
-    start = logs.rfind("Starting stack")
-    if start < 0:
+    # The caller supplies logs for one sequential request. Starting stack is
+    # written to stderr; Docker may timestamp it after the stdout result.
+    # Correlate only the byte count and completion on the same stdout stream.
+    received = list(re.finditer(r"Input size: (\d+)", logs))
+    completed = list(re.finditer(r"==== Returned Properly ====", logs))
+    if not received or not completed:
         return None
-    block = logs[start:]
-    if "==== Returned Properly ====" not in block:
-        return None
-    received = re.search(r"Input size: (\d+)", block)
-    if not received or int(received[1]) != byte_count:
-        raise ValueError("normal stack input byte count does not match")
-    return {"received_bytes": int(received[1]), "returned_properly": True}
+    if len(received) != 1 or len(completed) != 1:
+        raise ValueError("multiple stack traces in one request's log window")
+    if completed[0].start() < received[0].end():
+        raise ValueError("stack completion precedes its input byte count")
+    actual = int(received[0][1])
+    if actual != byte_count:
+        raise ValueError(f"normal stack received {actual} bytes, expected {byte_count}")
+    return {"received_bytes": actual, "returned_properly": True}
 
 
 def normal_trace(logs, marker, byte_count):

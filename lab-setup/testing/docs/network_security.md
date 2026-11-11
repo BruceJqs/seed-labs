@@ -82,8 +82,8 @@ framework.
 - Manifest: [network.firewall_evasion](../manifests/network/firewall_evasion.yaml); variants: `amd64, arm64`; environment: supplied Compose setup.
 
 - Check both subnets, routing nodes, endpoint SSH/Telnet services, and support for temporary TUN interfaces.
-- Verify the supplied SSH allow rule, TCP drop rule, ordinary SSH banner, and blocked Telnet connections across the subnets.
-- Confirm that the target port is available locally before checking that the remote connection times out. Do not implement the bypass tunnel.
+- Check the SSH banner and Telnet listener locally on host B, independently of router filtering.
+- Interface-dependent NAT and firewall rule adjustments described in the manual are left to the user and are outside the acceptance checks. Do not implement the bypass tunnel.
 
 ## ICMP_Redirect
 
