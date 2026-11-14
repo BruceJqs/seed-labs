@@ -20,7 +20,7 @@ See the coverage references for individual labs:
 | `docs/` | Per-category test scope and prerequisite references |
 | `manifests/` | Per-lab prerequisites, setup paths, and acceptance checks |
 | `testing/` | Lifecycle management, probes, and report generation |
-| `tools/` | Small UID, TLS, and libpcap capability-check programs |
+| `tools/` | UID, TLS, and libpcap probes, plus the Emulator SDK compatibility patch |
 | `artifacts/` | Generated run evidence; excluded from version control |
 
 The programs in `tools/` check host capabilities: `uid_check.c` prints real and
@@ -34,7 +34,8 @@ There are no auxiliary compiler images or replacement test containers.
 
 ## Requirements
 
-- Linux and Python 3.10 or newer.
+- Linux and Python 3.8 or newer. Ubuntu 20.04 with its system Python 3.8 is the
+  baseline local environment.
 - Docker Engine, the Docker Compose plugin, and local Docker socket access for
   labs that supply container setups.
 - A native CPU architecture matching the selected manifest variant: `amd64` or
@@ -68,17 +69,24 @@ A local run does not require a GitHub account or token.
 
 ## Installation
 
-Use an existing Python environment or create a virtual environment:
+On Ubuntu 20.04, install virtual environment support and create an environment
+using the system Python 3.8:
 
 ```sh
+sudo apt update
+sudo apt install -y python3-venv
 python3 -m venv lab-setup/testing/.venv
 . lab-setup/testing/.venv/bin/activate
+python -m pip install --upgrade "pip<25.1"
 python -m pip install -r lab-setup/testing/requirements.txt
 ```
 
 The commands below use `python` from the active environment. Other environment
 managers can be used with the same dependencies and commands. An optional
 [uv setup](#using-uv-optional) is provided below.
+
+The system Python does not need to be upgraded. Activate this virtual environment
+again when opening a new terminal.
 
 ## Select a test
 
@@ -148,7 +156,12 @@ export SEED_EMULATOR_SOURCE=/path/to/seed-emulator
 
 The default location is `../seed-emulator`, relative to this repository. The
 runner uses an archive of the required commit; uncommitted SDK changes are not
-used. Review the lab manifest for the generated topology and resource needs.
+used. On Python 3.8 and 3.9, it applies
+[emulator-python38.patch](tools/emulator-python38.patch) to that archive's working
+copy to replace the SDK's Python 3.10 match statements with equivalent conditional
+branches. The SDK checkout and lab generators remain unchanged. The patch path
+and SHA-256 are recorded in `emulator.json`. Review the lab manifest for the
+generated topology and resource needs.
 
 The supplied Internet Map configuration mounts the host Docker socket. This
 mount is explicitly allowed by the relevant manifests.
@@ -252,7 +265,9 @@ establish that other labs, architectures, or completed student exercises work.
 ## GitHub Actions
 
 The [GitHub Actions workflow](../../.github/workflows/labsetup.yml) reads its matrix
-from the manifests and uses the same test runner as local execution. Runner
+from the manifests and uses the same test runner as local execution with Python
+3.8. CI uses uv only to provision Python 3.8 on the hosted runners; test commands
+use ordinary Python and pip. Runner
 machines must meet the architecture and lab-specific prerequisites described
 above. CI installs each case's declared Ubuntu host packages directly on its
 runner before testing; local runs only check prerequisites. The workflow runs on
@@ -268,7 +283,7 @@ also attempts to remove resources after a failed or interrupted run.
 uv can create the same virtual environment and install the requirements:
 
 ```sh
-uv venv lab-setup/testing/.venv
+uv venv --python 3.8 lab-setup/testing/.venv
 uv pip install --python lab-setup/testing/.venv/bin/python -r lab-setup/testing/requirements.txt
 . lab-setup/testing/.venv/bin/activate
 ```

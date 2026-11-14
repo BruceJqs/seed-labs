@@ -1,0 +1,521 @@
+--- a/seedemu/core/Scope.py
++++ b/seedemu/core/Scope.py
+@@ -50,18 +50,19 @@
+     def from_node(node: 'Node'):
+         from .enums import NodeRole
+         
+-        match node.getRole():
+-            case NodeRole.Host:
++        _python38_scope_53 = (node.getRole())
++        if True:  # Preserve the original match block indentation.
++            if _python38_scope_53 == NodeRole.Host:
+                 return ScopeType.HNODE
+-            case NodeRole.Router:
++            elif _python38_scope_53 == NodeRole.Router:
+                 return ScopeType.RNODE
+-            case NodeRole.BorderRouter:
++            elif _python38_scope_53 == NodeRole.BorderRouter:
+                 return ScopeType.BRDNODE
+-            case NodeRole.ControlService:
++            elif _python38_scope_53 == NodeRole.ControlService:
+                 return ScopeType.CSNODE
+-            case NodeRole.RouteServer:
++            elif _python38_scope_53 == NodeRole.RouteServer:
+                 return ScopeType.RSNODE
+-            case NodeRole.OpenVpnRouter:
++            elif _python38_scope_53 == NodeRole.OpenVpnRouter:
+                 return ScopeType.RNODE
+ 
+ 
+@@ -150,14 +151,15 @@
+         same_node = same_asn and self.node == other.node # and same_type ?!
+ 
+         if self.tier==other.tier:
+-            match self.tier:
+-                case ScopeTier.Global:  # asn, nodeID irrelevant
++            _python38_scope_153 = (self.tier)
++            if True:  # Preserve the original match block indentation.
++                if _python38_scope_153 == ScopeTier.Global:  # asn, nodeID irrelevant
+                     if same_type:
+                         return False, True
+                     else:
+                         return False, False
+ 
+-                case ScopeTier.AS: # nodeID irrelevant
++                elif _python38_scope_153 == ScopeTier.AS: # nodeID irrelevant
+                     if same_asn:
+                         if same_type:
+                             return False, True
+@@ -166,7 +168,7 @@
+                     else:
+                         return False, False
+                     
+-                case ScopeTier.Node: # type should be irrelevant (i.e. redundant ) here
++                elif _python38_scope_153 == ScopeTier.Node: # type should be irrelevant (i.e. redundant ) here
+                     if same_asn:
+                         if same_node:
+                             return False,True
+@@ -175,11 +177,13 @@
+                     else:
+                         return False, False
+         else:
+-            match self.tier:
+-                case ScopeTier.Global:
++            _python38_scope_178 = (self.tier)
++            if True:  # Preserve the original match block indentation.
++                if _python38_scope_178 == ScopeTier.Global:
+                     # other.tier must be AS or Node
+-                    match other.tier:
+-                        case ScopeTier.AS:
++                    _python38_scope_181 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_181 == ScopeTier.AS:
+                             if same_type:
+                                 # other AS scope is subset of self
+                                 return True, False
+@@ -189,7 +193,7 @@
+                             else:
+                                 # types conflict and prevent inclusion
+                                 return False, False
+-                        case ScopeTier.Node:
++                        elif _python38_scope_181 == ScopeTier.Node:
+                             if same_type:
+                                 return True, False
+                             elif otherTypeInSelf: 
+@@ -197,10 +201,11 @@
+                             else:
+                                 return False, False
+                     
+-                case ScopeTier.AS:
+-                    
+-                    match  other.tier:
+-                        case ScopeTier.Global:
++                elif _python38_scope_178 == ScopeTier.AS:
++                    
++                    _python38_scope_202 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_202 == ScopeTier.Global:
+                             if same_type: # self is subset of other
+                                 return True, False
+                             elif selfTypeInOther:
+@@ -208,7 +213,7 @@
+                             else:
+                                 # both scopes make statements about different types of scopes
+                                 return False, False
+-                        case ScopeTier.Node:
++                        elif _python38_scope_202 == ScopeTier.Node:
+                             if same_asn:
+                                 if same_type:
+                                     return True, False
+@@ -219,10 +224,11 @@
+                             else:
+                                 return False, False
+                     
+-                case ScopeTier.Node:
+-
+-                    match other.tier:
+-                        case ScopeTier.AS:
++                elif _python38_scope_178 == ScopeTier.Node:
++
++                    _python38_scope_224 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_224 == ScopeTier.AS:
+                             if same_asn:
+                                 if same_type:
+                                     return True, False
+@@ -233,7 +239,7 @@
+                             else:
+                                 return False, False
+ 
+-                        case ScopeTier.Global:
++                        elif _python38_scope_224 == ScopeTier.Global:
+                             if same_type:
+                                 return True, False
+                             elif selfTypeInOther:
+@@ -266,8 +272,9 @@
+         same_node = same_asn and self.node == other.node # and same_type ?!
+ 
+         if self.tier==other.tier:
+-            match self.tier:
+-                case ScopeTier.Global:  # asn, nodeID irrelevant
++            _python38_scope_269 = (self.tier)
++            if True:  # Preserve the original match block indentation.
++                if _python38_scope_269 == ScopeTier.Global:  # asn, nodeID irrelevant
+                     if same_type:
+                         return False # they are equal not gt
+                     elif otherTypeInSelf:
+@@ -275,7 +282,7 @@
+                     else:
+                         return NotImplemented
+ 
+-                case ScopeTier.AS: # nodeID irrelevant
++                elif _python38_scope_269 == ScopeTier.AS: # nodeID irrelevant
+                     if same_asn:
+                         if same_type:
+                             return False # they are equal not gt
+@@ -287,7 +294,7 @@
+                         # scopes of different ASes are disjoint
+                         return NotImplemented
+                     
+-                case ScopeTier.Node: # type should be irrelevant (i.e. redundant ) here
++                elif _python38_scope_269 == ScopeTier.Node: # type should be irrelevant (i.e. redundant ) here
+                     if same_asn:
+                         if same_node:
+                             return False # equal and not gt
+@@ -296,11 +303,13 @@
+                     else:
+                         return NotImplemented
+         else:
+-            match self.tier:
+-                case ScopeTier.Global:
++            _python38_scope_299 = (self.tier)
++            if True:  # Preserve the original match block indentation.
++                if _python38_scope_299 == ScopeTier.Global:
+                     # other.tier must be AS or Node
+-                    match other.tier:
+-                        case ScopeTier.AS:
++                    _python38_scope_302 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_302 == ScopeTier.AS:
+                             if same_type:
+                                 # other AS scope is subset of self (gt)
+                                 return True
+@@ -309,7 +318,7 @@
+                                 return True
+                             else:                                
+                                 return False
+-                        case ScopeTier.Node:
++                        elif _python38_scope_302 == ScopeTier.Node:
+                             if same_type:
+                                 # other is subset of self (gt)
+                                 return True
+@@ -319,13 +328,14 @@
+                             else:
+                                 return False
+                     
+-                case ScopeTier.AS:
+-                    
+-                    match  other.tier:
+-                        case ScopeTier.Global:
++                elif _python38_scope_299 == ScopeTier.AS:
++                    
++                    _python38_scope_324 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_324 == ScopeTier.Global:
+                             
+                                 return False
+-                        case ScopeTier.Node:
++                        elif _python38_scope_324 == ScopeTier.Node:
+                             if same_asn:
+                                 if same_type:
+                                     return True
+@@ -336,14 +346,15 @@
+                             else:
+                                 return False
+                     
+-                case ScopeTier.Node:
+-
+-                    match other.tier:
+-                        case ScopeTier.AS:
++                elif _python38_scope_299 == ScopeTier.Node:
++
++                    _python38_scope_341 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_341 == ScopeTier.AS:
+                             
+                             return False
+ 
+-                        case ScopeTier.Global:
++                        elif _python38_scope_341 == ScopeTier.Global:
+                             return False        
+        
+ 
+@@ -376,8 +387,9 @@
+         same_node = same_asn and self.node == other.node # and same_type ?!
+ 
+         if self.tier==other.tier:
+-            match self.tier:
+-                case ScopeTier.Global:  # asn, nodeID irrelevant
++            _python38_scope_379 = (self.tier)
++            if True:  # Preserve the original match block indentation.
++                if _python38_scope_379 == ScopeTier.Global:  # asn, nodeID irrelevant
+                     if same_type:
+                         return False # they are equal not lt
+                     elif selfTypeInOther:
+@@ -385,7 +397,7 @@
+                     else:
+                         return NotImplemented
+ 
+-                case ScopeTier.AS: # nodeID irrelevant
++                elif _python38_scope_379 == ScopeTier.AS: # nodeID irrelevant
+                     if same_asn:
+                         if same_type:
+                             return False # they are equal not lt
+@@ -397,7 +409,7 @@
+                         # scopes of different ASes are disjoint
+                         return NotImplemented
+                     
+-                case ScopeTier.Node: # type should be irrelevant (i.e. redundant ) here
++                elif _python38_scope_379 == ScopeTier.Node: # type should be irrelevant (i.e. redundant ) here
+                     if same_asn:
+                         if same_node:
+                             return False # equal and not lt
+@@ -406,11 +418,13 @@
+                     else:
+                         return NotImplemented
+         else:
+-            match self.tier:
+-                case ScopeTier.Global:
++            _python38_scope_409 = (self.tier)
++            if True:  # Preserve the original match block indentation.
++                if _python38_scope_409 == ScopeTier.Global:
+                     # other.tier must be AS or Node
+-                    match other.tier:
+-                        case ScopeTier.AS:
++                    _python38_scope_412 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_412 == ScopeTier.AS:
+                             if same_type:
+                                 # other AS scope is subset of self (gt)
+                                 return False
+@@ -419,7 +433,7 @@
+                                 return False
+                             else:                                
+                                 return False
+-                        case ScopeTier.Node:
++                        elif _python38_scope_412 == ScopeTier.Node:
+                             if same_type:
+                                 # other is subset of self (gt)
+                                 return False
+@@ -429,10 +443,11 @@
+                             else:
+                                 return False
+                     
+-                case ScopeTier.AS:
+-                    
+-                    match  other.tier:
+-                        case ScopeTier.Global:
++                elif _python38_scope_409 == ScopeTier.AS:
++                    
++                    _python38_scope_434 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_434 == ScopeTier.Global:
+                             if same_type: # self is subset of other
+                                 return True
+                             elif selfTypeInOther:
+@@ -440,7 +455,7 @@
+                             else:
+                                 # both scopes make statements about different types of scopes
+                                 return False
+-                        case ScopeTier.Node:
++                        elif _python38_scope_434 == ScopeTier.Node:
+                             if same_asn:
+                                 if same_type:
+                                     return False
+@@ -451,10 +466,11 @@
+                             else:
+                                 return False
+                     
+-                case ScopeTier.Node:
+-
+-                    match other.tier:
+-                        case ScopeTier.AS:
++                elif _python38_scope_409 == ScopeTier.Node:
++
++                    _python38_scope_456 = (other.tier)
++                    if True:  # Preserve the original match block indentation.
++                        if _python38_scope_456 == ScopeTier.AS:
+                             if same_asn:
+                                 if same_type:
+                                     return True
+@@ -465,7 +481,7 @@
+                             else:
+                                 return False
+ 
+-                        case ScopeTier.Global:
++                        elif _python38_scope_456 == ScopeTier.Global:
+                             if same_type:
+                                 return True
+                             elif selfTypeInOther:
+--- a/seedemu/compiler/Docker.py
++++ b/seedemu/compiler/Docker.py
+@@ -1185,43 +1185,46 @@
+ 
+     def _sndary_key(self, o: BaseOption, s: Scope )   -> str:
+         base = o.name.upper()
+-        match s.tier:
+-            case ScopeTier.Global:
+-                match s.type:
+-                    case ScopeType.ANY:
++        _python38_scope_1188 = (s.tier)
++        if True:  # Preserve the original match block indentation.
++            if _python38_scope_1188 == ScopeTier.Global:
++                _python38_scope_1190 = (s.type)
++                if True:  # Preserve the original match block indentation.
++                    if _python38_scope_1190 == ScopeType.ANY:
+                         return base
+-                    case ScopeType.BRDNODE:
++                    elif _python38_scope_1190 == ScopeType.BRDNODE:
+                         return f'{base}_BRDNODE'
+-                    case ScopeType.HNODE:
++                    elif _python38_scope_1190 == ScopeType.HNODE:
+                         return f'{base}_HNODE'
+-                    case ScopeType.CSNODE:
++                    elif _python38_scope_1190 == ScopeType.CSNODE:
+                         return f'{base}_CSNODE'
+-                    case ScopeType.RSNODE:
++                    elif _python38_scope_1190 == ScopeType.RSNODE:
+                         return f'{base}_RSNODE'
+-                    case ScopeType.RNODE:
++                    elif _python38_scope_1190 == ScopeType.RNODE:
+                         return f'{base}_RNODE'
+-                    case _:
++                    else:
+                         #TODO: combination (ORed) Flags not yet implemented
+                         raise NotImplementedError
+-            case ScopeTier.AS:
+-                match s.type:
+-                    case ScopeType.ANY:
++            elif _python38_scope_1188 == ScopeTier.AS:
++                _python38_scope_1207 = (s.type)
++                if True:  # Preserve the original match block indentation.
++                    if _python38_scope_1207 == ScopeType.ANY:
+                         return f'{base}_{s.asn}'
+-                    case ScopeType.BRDNODE:
++                    elif _python38_scope_1207 == ScopeType.BRDNODE:
+                         return f'{base}_{s.asn}_BRDNODE'
+-                    case ScopeType.HNODE:
++                    elif _python38_scope_1207 == ScopeType.HNODE:
+                         return f'{base}_{s.asn}_HNODE'
+-                    case ScopeType.CSNODE:
++                    elif _python38_scope_1207 == ScopeType.CSNODE:
+                         return f'{base}_{s.asn}_CSNODE'
+-                    case ScopeType.RSNODE:
++                    elif _python38_scope_1207 == ScopeType.RSNODE:
+                         return f'{base}_{s.asn}_RSNODE'
+-                    case ScopeType.RNODE:
++                    elif _python38_scope_1207 == ScopeType.RNODE:
+                         return f'{base}_{s.asn}_RNODE'
+-                    case _:
++                    else:
+                         # combination (ORed) Flags not yet implemented
+                         #TODO: How should we call CSNODE|HNODE or BRDNODE|RSNODE|RNODE ?!
+                         raise NotImplementedError
+-            case ScopeTier.Node:
++            elif _python38_scope_1188 == ScopeTier.Node:
+                 return f'{base}_{s.asn}_{s.node.upper()}' # maybe add type here
+ 
+     def _compileNet(self, net: Network) -> str:
+--- a/seedemu/core/Volume.py
++++ b/seedemu/core/Volume.py
+@@ -147,12 +147,13 @@
+         )
+     elif data.mode == "service":
+         kvs = {}
+-        match data.asDict()['type']:
+-            case 'bind':
++        _python38_scope_150 = (data.asDict()['type'])
++        if True:  # Preserve the original match block indentation.
++            if _python38_scope_150 == 'bind':
+                 kvs = filter(
+                 lambda kv: kv[0] in ["type", "source", "target", "read_only"],
+                 data.asDict().clean_dict().items() )
+-            case 'volume':
++            elif _python38_scope_150 == 'volume':
+                 kvs = filter(
+                 lambda kv: kv[0] in ["type", "source", "target", "read_only", "volume"],
+                 data.asDict().clean_dict().items() )
+--- a/seedemu/layers/Scion.py
++++ b/seedemu/layers/Scion.py
+@@ -100,15 +100,16 @@
+     """
+     if (opt := node.getOption('scion_etc_config_vol')) != None:
+                 suffix = f'/{subdir}' if subdir != None else ''
+-                match opt.value:
+-                    case ScionConfigMode.SHARED_FOLDER:
++                _python38_scope_103 = (opt.value)
++                if True:  # Preserve the original match block indentation.
++                    if _python38_scope_103 == ScionConfigMode.SHARED_FOLDER:
+                         current_dir = os.getcwd()
+                         path = os.path.join(current_dir,
+                                              f'.shared/{node.getAsn()}/{node.getName()}/etcscion{suffix}')
+                         os.makedirs(path, exist_ok=True)
+                         with open(os.path.join(path, filename), "w") as file:
+                             file.write(filecontent)
+-                    case _:
++                    else:
+                     #case ScionConfigMode.BAKED_IN:
+                         node.setFile(f"/etc/scion{suffix}/{filename}", filecontent)
+                     #case ScionConfigMode.NAMED_VOLUME: will be populated on fst mount
+@@ -177,10 +178,11 @@
+             raise TypeError(f"Invalid SetupSpecification variant: {self}")
+ 
+     def describe(method):
+-        match method:
+-            case SetupSpecification.PACKAGES:
++        _python38_scope_180 = (method)
++        if True:  # Preserve the original match block indentation.
++            if _python38_scope_180 == SetupSpecification.PACKAGES:
+                 return "Installed via Ubuntu ETHZ .deb package"
+-            case SetupSpecification.LOCAL_BUILD:
++            elif _python38_scope_180 == SetupSpecification.LOCAL_BUILD:
+                 return "Local build from source"
+ 
+ # TODO: add the notion of provided capabilities to SetupSpecification
+@@ -215,28 +217,30 @@
+         spec = node.getOption('setup_spec', prefix='scion')
+         assert spec != None, 'implementation error - all nodes are supposed to have a SetupSpecification set by ScionRoutingLayer'
+ 
+-        match s:=spec.value:
+-            case SetupSpecification.LOCAL_BUILD:
++        _python38_scope_218 = (s:=spec.value)
++        if True:  # Preserve the original match block indentation.
++            if _python38_scope_218 == SetupSpecification.LOCAL_BUILD:
+                 self.__installFromBuild(node, s.checkout_spec)
+                 self._addSCIONLabPackages(node)
+                 node.addBuildCommand("apt-get update && apt download scion-apps-bwtester"
+                                      " && dpkg --ignore-depends=scion-daemon,scion-dispatcher -i scion-apps-bwtester_3.4.2_amd64.deb")
+ 
+ 
+-            case SetupSpecification.PACKAGES:
++            elif _python38_scope_218 == SetupSpecification.PACKAGES:
+                 self._installFromDebPackage(node)
+ 
+     def nameOfCmd(self, cmd, node: Node) -> str:
+         spec = node.getOption('setup_spec', prefix='scion')
+         assert spec != None, 'implementation error - all nodes are supposed to have a SetupSpecification set by ScionRoutingLayer'
+         assert cmd in ['router', 'control', 'dispatcher', 'daemon'], f'unknown SCION distributable {cmd}'
+-        match spec.value:
+-            case SetupSpecification.PACKAGES:
++        _python38_scope_233 = (spec.value)
++        if True:  # Preserve the original match block indentation.
++            if _python38_scope_233 == SetupSpecification.PACKAGES:
+                 return {'router': 'scion-border-router',
+                         'control': 'scion-control-service',
+                         'dispatcher': 'scion-dispatcher',
+                         'daemon': 'sciond' }[cmd]
+-            case SetupSpecification.LOCAL_BUILD:
++            elif _python38_scope_233 == SetupSpecification.LOCAL_BUILD:
+                 return cmd
+ 
+     def _addSCIONLabPackages(self, node: Node):
+--- a/seedemu/layers/ScionRouting.py
++++ b/seedemu/layers/ScionRouting.py
+@@ -422,13 +422,14 @@
+ 
+             if (cfg_vol := obj.getOption('scion_etc_config_vol')) != None:
+                 node: Node = obj
+-                match cfg_vol.value:
++                _python38_scope_425 = (cfg_vol.value)
++                if True:  # Preserve the original match block indentation.
+                     # case ScionConfigMode.BAKED_IN:
+-                    case ScionConfigMode.SHARED_FOLDER:
++                    if _python38_scope_425 == ScionConfigMode.SHARED_FOLDER:
+                         current_dir = os.getcwd()
+                         node.addSharedFolder('/etc/scion',
+                                               os.path.join(current_dir, f'.shared/{node.getAsn()}/{node.getName()}/etcscion'))
+-                    case ScionConfigMode.NAMED_VOLUME:
++                    elif _python38_scope_425 == ScionConfigMode.NAMED_VOLUME:
+                         node.addPersistentStorage('/etc/scion',
+                                                    f'etcscion_{node.getAsn()}-{node.getName()}')
+ 

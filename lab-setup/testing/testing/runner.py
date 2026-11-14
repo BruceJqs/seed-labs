@@ -23,7 +23,7 @@ import xml.etree.ElementTree as ET
 
 import yaml
 
-from .manifest import inside, ManifestError
+from .manifest import inside, is_within, ManifestError, TESTING
 from .errors import CheckFailure, Blocked
 from .software import software_probe
 from .web import login_probe
@@ -37,9 +37,9 @@ class Runner:
             raise ManifestError("host tests use an isolated workspace; existing mode is for Compose")
         self.run_dir = Path(run_dir).resolve()
         # Never permit staging/cleanup to overwrite source inputs.
-        if self.run_dir == manifest.root or manifest.root.is_relative_to(self.run_dir):
+        if self.run_dir == manifest.root or is_within(manifest.root, self.run_dir):
             raise ManifestError("run directory must not contain the repository")
-        if self.run_dir.is_relative_to(manifest.setup):
+        if is_within(self.run_dir, manifest.setup):
             raise ManifestError("run directory must be outside the lab setup")
         self.run_dir.mkdir(parents=True, exist_ok=True)
         self.mode = mode
@@ -181,7 +181,8 @@ class Runner:
     def host_preflight(self):
         profile = self.manifest.data.get("host", {})
         arch = {"x86_64": "amd64", "aarch64": "arm64"}.get(platform.machine(), platform.machine())
-        facts = {"host_os": platform.platform(), "host_kernel": platform.release(), "host_libc": platform.libc_ver(),
+        facts = {"python_version": platform.python_version(), "python_executable": sys.executable,
+                 "host_os": platform.platform(), "host_kernel": platform.release(), "host_libc": platform.libc_ver(),
                  "host_architecture": arch, "host_uid": os.getuid(),
                  "host_commands": {name: shutil.which(name) for name in profile.get("commands", []) + profile.get("architecture_commands", {}).get(arch, [])}}
         (self.run_dir / "environment.json").write_text(json.dumps(facts, indent=2) + "\n")
@@ -224,7 +225,8 @@ class Runner:
             raise Blocked("remote Docker is unsupported: HTTP probes must reach the local lab network")
         self.successful(self.docker(["compose", "version"]))
         environment = {
-            **facts, "host_os": platform.platform(), "host_kernel": platform.release(),
+            **facts, "python_version": platform.python_version(), "python_executable": sys.executable,
+            "host_os": platform.platform(), "host_kernel": platform.release(),
             "docker_os": info["OperatingSystem"], "docker_kernel": info["KernelVersion"],
             "docker_architecture": arch, "docker_version": info["ServerVersion"],
             "explicit_tun_device": str(self.tun_device) if self.tun_device else None,
@@ -258,7 +260,7 @@ class Runner:
         paths = [self.manifest.config["setup"], *self.manifest.data.get("dependencies", [])]
         for rel in sorted(set(paths), key=lambda s: len(Path(s).parts)):
             source = inside(self.manifest.root, rel)
-            if self.run_dir.is_relative_to(source):
+            if is_within(self.run_dir, source):
                 raise ManifestError(f"staging source contains the run directory: {source}")
             target = inside(self.workspace, rel)
             if target.exists():
@@ -284,12 +286,21 @@ class Runner:
             self.successful(self.command(["git", "-C", str(source), "archive", "--format=tar", "--output", str(archive), revision, "seedemu"], cwd=self.manifest.root))
             with tarfile.open(archive) as bundle:
                 for member in bundle.getmembers():
-                    if member.issym() or member.islnk() or not (sdk / member.name).resolve().is_relative_to(sdk):
+                    if member.issym() or member.islnk() or not is_within((sdk / member.name).resolve(), sdk):
                         raise ManifestError(f"unsupported emulator archive entry: {member.name}")
                 bundle.extractall(sdk)
+            sdk_evidence = {"revision": revision, "source": str(source),
+                "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "working_tree_changes_ignored": True}
+            if sys.version_info < (3, 10):
+                patch = TESTING / "tools" / "emulator-python38.patch"
+                self.successful(self.command(["git", "apply", "--unsafe-paths", "--directory", str(sdk), str(patch)],
+                                             cwd=self.manifest.root))
+                sdk_evidence["python_compatibility_patch"] = {
+                    "source": str(patch.relative_to(self.manifest.root)),
+                    "sha256": hashlib.sha256(patch.read_bytes()).hexdigest(),
+                }
             prepare_env = {"PYTHONPATH": str(sdk)}
-            (self.run_dir / "emulator.json").write_text(json.dumps({"revision": revision, "source": str(source),
-                "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(), "working_tree_changes_ignored": True}, indent=2) + "\n")
+            (self.run_dir / "emulator.json").write_text(json.dumps(sdk_evidence, indent=2) + "\n")
         for step in self.manifest.preparation():
             cwd = inside(self.setup, step.get("cwd", "."))
             result = self.host_command(step["argv"], cwd, step.get("timeout", 300),
@@ -327,7 +338,7 @@ class Runner:
             build = spec.get("build")
             if build:
                 context = Path(build["context"]).resolve()
-                if not context.is_relative_to(self.workspace):
+                if not is_within(context, self.workspace):
                     raise ManifestError(f"unstaged build context {context}; declare dependencies")
                 if not (context / build.get("dockerfile", "Dockerfile")).is_file():
                     raise ManifestError(f"Dockerfile missing in {context}")
@@ -339,7 +350,7 @@ class Runner:
                 if text != rewritten:
                     dockerfile.write_text(rewritten)
             for mount in spec.get("volumes", []):
-                if mount["type"] == "bind" and not Path(mount["source"]).resolve().is_relative_to(self.workspace):
+                if mount["type"] == "bind" and not is_within(Path(mount["source"]).resolve(), self.workspace):
                     allowed = {Path(p).resolve() for p in self.manifest.data["runtime"].get("allowed_host_binds", [])}
                     if Path(mount["source"]).resolve() not in allowed:
                         raise ManifestError("managed host bind mounts must be explicitly declared")

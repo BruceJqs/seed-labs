@@ -1,5 +1,6 @@
 """Manifest loading and repository-relative path handling."""
 from pathlib import Path
+import os
 
 import yaml
 
@@ -28,12 +29,21 @@ def mapping(loader, node):
 UniqueLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, mapping)
 
 
+def is_within(path, base):
+    """Python 3.8 equivalent of Path.is_relative_to for resolved paths."""
+    try:
+        path.relative_to(base)
+        return True
+    except ValueError:
+        return False
+
+
 def inside(base, value):
     path = Path(value)
     if path.is_absolute():
         raise ManifestError(f"expected a relative path: {value}")
     resolved = (base / path).resolve()
-    if not resolved.is_relative_to(base.resolve()):
+    if not is_within(resolved, base.resolve()):
         raise ManifestError(f"path escapes {base}: {value}")
     return resolved
 
@@ -156,9 +166,9 @@ class Manifest:
         """Check inputs without modifying files or contacting Docker."""
         def verify_tree(path, ancestors=frozenset()):
             if path.is_symlink() and not path.exists():
-                raise ManifestError(f"broken symlink: {path} -> {path.readlink()}")
+                raise ManifestError(f"broken symlink: {path} -> {os.readlink(path)}")
             resolved = path.resolve()
-            if not resolved.is_relative_to(self.root):
+            if not is_within(resolved, self.root):
                 raise ManifestError(f"symlink leaves repository: {path}")
             if path.is_dir():
                 if resolved in ancestors:
@@ -185,7 +195,7 @@ class Manifest:
                 build = spec.get("build")
                 if build:
                     context = (compose.parent / (build if isinstance(build, str) else build["context"])).resolve()
-                    if not context.is_relative_to(self.root):
+                    if not is_within(context, self.root):
                         raise ManifestError(f"build context leaves repository: {context}")
                     dockerfile = "Dockerfile" if isinstance(build, str) else build.get("dockerfile", "Dockerfile")
                     if not (context / dockerfile).is_file():
